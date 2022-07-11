@@ -1,5 +1,4 @@
 import pygame
-import sys
 import os
 import random
 import time
@@ -8,7 +7,9 @@ import threading
 from decimal import Decimal
 import numpy
 
-#CONFIGURATIONS
+"""
+CONFIGURATIONS
+"""
 PARTICLE_NUMBER = 100
 PARTICLE_RANGE = 10
 PARTICLE_VELOCITY = 130
@@ -21,6 +22,9 @@ GRAPHICS_CLOUD_DRAW_ALT = 300
 INFINITE_FUEL = 0
 TRACK_RECORD = 100
 
+"""
+粒子系统
+"""
 #PARTICLE SYSTEM
 PARTICLESYS_EFFECT_SPOUT = 0
 PARTICLESYS_EFFECT_CLOUD = 1
@@ -216,8 +220,6 @@ def calcPressure(height):
     pressure = 101325*2.718**(-height/5800)
 
 #referred to USSA data
-
-
 def calcTemprature(height):
     global temperature
     h = height / 1000
@@ -551,6 +553,7 @@ soud_explosion = None
 orbit_Mode = False
 showOrbitDirection = True
 forceKeyboardCtl=False
+tutorialMode=True
 planet_image = pygame.transform.scale(
     pygame.image.load(r"resources\planet.png"), (200, 200))
 planet_image_s = pygame.image.load(r"resources\planet.png")
@@ -597,7 +600,7 @@ def showRocketInfor(x, y):
     textSurfaceRect = textSurfaceObj.get_rect().move(x + 20, y + 25)
     screen.blit(textSurfaceObj, textSurfaceRect)
     textSurfaceObj = fontobj.render(
-        "地表:" + format(rocket.height, ".1f") + " m/s", True, (255, 255, 255))
+        "地表高度:" + format(rocket.height, ".1f") + " m", True, (255, 255, 255))
     textSurfaceRect = textSurfaceObj.get_rect().move(x + 20, y + 40)
     screen.blit(textSurfaceObj, textSurfaceRect)
 
@@ -635,7 +638,7 @@ def showPtyInfor(p,order=0):
 
 def GameStart():
     global screen, simulatorCtl, particlesys, cloudsys, sound_engStart, sound_engStop, soud_explosion,\
-        sound_engWorking
+        sound_engWorking,tutorialMode
     # Graphics
     pygame.init()  # 初始化pygame
     pygame.key.set_repeat(70, 70)
@@ -675,16 +678,24 @@ def GameStart():
     showTextLeftUp("deltaV：火箭在真空下燃烧完所有燃料能得到的速度变化量", 10)
     showTextLeftUp("Vx Vy：沿绝对坐标系正交分解的速度矢量大小", 11)
     showTextLeftUp("程序中将有详细解析与提示。更多信息请参见文档。", 12)
-    showTextLeftUp("按C继续。！！请认真观看程序执行，关注每一步变化。一旦出现提示更新必须马上执行。", 13)
+    showTextLeftUp("按T进入教程模式！！请认真观看程序执行，关注每一步变化。一旦出现提示更新必须马上执行。", 13)
     #如果你能把飞船送入轨道，无论去太空中的任何地方，你都可以说自己已经走完了一半的道路。
-    showTextLeftUp("如果错过提示更新，可能会导致轨道偏离预期等严重后果。请严格按照程序执行步骤。", 14)
-    showTextLeftUp("“如果你能把飞船送入轨道，无论去太空中的任何地方，你都可以说自己已经走完了一半的道路。”", 18)
-    showTextLeftUp("引自《A Step Farther Out 》194页，作者 Jerry Pournelle", 19)
+    showTextLeftUp("对于tutorial模式。如果错过提示更新，可能会导致轨道偏离预期等严重后果。请严格按照程序执行步骤。", 14)
+    showTextLeftUp("按C进行自由任务。", 15)
+    showTextLeftUp("热键: [SPACE]：打开/关闭发动机 [Z]：最大节流阀 [X]：最小节流阀 [LSHIFT]：增大节流阀", 16)
+    showTextLeftUp("[LCTRL]：减小节流阀 [M]：进入轨道模式 [F]：无限燃料 [U]：一键入轨", 17)
+    showTextLeftUp("[O]：时间加速 [P]：时间减速", 18)
+    showTextLeftUp("“如果你能把飞船送入轨道，无论去太空中的任何地方，你都可以说自己已经走完了一半的道路。”", 20+1)
+    showTextLeftUp("引自《A Step Farther Out 》194页，作者 Jerry Pournelle", 20+2)
     pygame.display.flip()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c:
+                    tutorialMode=False
+                    return
+                elif event.key == pygame.K_t:
+                    tutorialMode=True
                     return
 
 
@@ -769,7 +780,7 @@ def GameLoop():
         particlesys, launchshelf_rect, launchshelf_image, fpsRate, cloudlist, sound_engStop, sound_engStart,\
         soud_explosion, sound_engWorking, ground_image, ground_rect, orbit_Mode, planet_image, planet_rect,\
         planet_image_s, zoom, debugInfo, trackrecord_cnt, showOrbitDirection, bgdimg_s, \
-        bgdrect, bgdimg_n, sim_timebase, oct, disableKey, forceKeyboardCtl
+        bgdrect, bgdimg_n, sim_timebase, oct, disableKey, forceKeyboardCtl, tutorialMode
     fps_start = time.time()
 
     if oct == None:
@@ -974,7 +985,9 @@ def GameLoop():
         rocket.orbit_track.append((rocket.px, rocket.GetAlt()))
         trackrecord_cnt = 0"""
 
-    GetTips(rocket)
+    if tutorialMode:
+        GetTips(rocket)
+
     pygame.display.flip()
     fps_end = time.time()
     fpsRate = 1 / (fps_end - fps_start)
